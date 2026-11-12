@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>StaticGridBot 面板方案</title>
+<style>
+/* 只用 MT5 Canvas 能画的东西：纯色、圆角、1px 线、文字。无渐变/阴影/模糊/动画。 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #000; font-family: "Microsoft YaHei", "微软雅黑", sans-serif; color: #E6EAF0;
+       -webkit-font-smoothing: antialiased; }
+.chart { position: relative; padding: 24px; min-height: 100vh;
+         background-color: #000;
+         background-image: linear-gradient(#1a1a1a 1px, transparent 1px), linear-gradient(90deg, #1a1a1a 1px, transparent 1px);
+         background-size: 80px 60px; }  /* 仅模拟图表网格，不属于面板 */
+.opt { display: none; }
+body.a #A, body.b #B, body.c #C { display: flex; gap: 28px; align-items: flex-start; }
+.cap { color: #8A94A6; font-size: 12px; margin-bottom: 8px; }
+
+.panel { width: 380px; background: #12161D; border: 1px solid #2E3746; border-radius: 8px; overflow: hidden; }
+.hd { display: flex; align-items: center; justify-content: space-between; height: 34px; padding: 0 12px;
+      background: #181E27; border-bottom: 1px solid #2E3746; }
+.hd .t { font-size: 13px; font-weight: 700; color: #E8B54A; letter-spacing: .5px; }
+.tag { font-size: 11px; color: #E8B54A; border: 1px solid #5A4A26; border-radius: 3px; padding: 0 6px; height: 18px; line-height: 16px; }
+.ver { font-size: 11px; color: #6B7586; }
+
+.status { display: flex; align-items: center; height: 32px; padding: 0 12px; border-bottom: 1px solid #2E3746; font-size: 12px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; }
+.ok  { color: #3FB97A; } .okbg { background: #3FB97A; }
+.warn{ color: #E8A33D; } .warnbg { background: #E8A33D; }
+.bad { color: #E5534B; } .badbg { background: #E5534B; }
+.dim { color: #8A94A6; }
+.pos { color: #3FB97A; } .neg { color: #E5534B; }
+
+.sec { padding: 8px 12px 6px; border-bottom: 1px solid #232A36; }
+.sec:last-child { border-bottom: none; }
+.sh { font-size: 11px; color: #8A94A6; margin-bottom: 4px; letter-spacing: 1px; }
+.row { display: flex; justify-content: space-between; align-items: baseline; height: 21px; font-size: 12px; }
+.row .l { color: #9AA4B5; }
+.row .v { color: #E6EAF0; font-variant-numeric: tabular-nums; }
+.row .v small { color: #8A94A6; font-size: 11px; margin-left: 6px; }
+.hl { color: #fff; font-weight: 700; }
+
+/* 方案 B */
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-bottom: 1px solid #232A36; }
+.kpi { background: #1A2029; border: 1px solid #272F3C; border-radius: 6px; padding: 6px 10px 7px; height: 56px; }
+.kpi .k { font-size: 11px; color: #8A94A6; }
+.kpi .n { font-size: 20px; font-weight: 700; line-height: 26px; font-variant-numeric: tabular-nums; }
+.kpi .n small { font-size: 12px; font-weight: 400; color: #8A94A6; margin-left: 3px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+th { font-weight: 400; color: #8A94A6; font-size: 11px; text-align: right; height: 20px; }
+th:first-child, td:first-child { text-align: left; }
+td { height: 21px; text-align: right; color: #E6EAF0; }
+td:first-child { color: #9AA4B5; }
+tr.tot td { border-top: 1px solid #2E3746; color: #fff; font-weight: 700; }
+tr.tot td:first-child { color: #fff; }
+
+/* 方案 C */
+.tabs { display: flex; height: 30px; border-bottom: 1px solid #2E3746; background: #12161D; }
+.tab { flex: 1; text-align: center; font-size: 12px; line-height: 29px; color: #8A94A6; }
+.tab.on { color: #E8B54A; font-weight: 700; border-bottom: 2px solid #E8B54A; }
+.btn { width: 22px; height: 22px; border: 1px solid #3A4456; border-radius: 4px; text-align: center; line-height: 19px; font-size: 12px; color: #9AA4B5; }
+.big { display: flex; justify-content: space-between; padding: 10px 12px 8px; border-bottom: 1px solid #232A36; }
+.big .k { font-size: 11px; color: #8A94A6; } .big .n { font-size: 22px; font-weight: 700; line-height: 28px; }
+</style>
+</head>
+<body>
+<script>document.body.className = (location.hash || '#a').slice(1);</script>
+<div class="chart">
+
+<!-- ========== 方案 A：清单式 ========== -->
+<div class="opt" id="A">
+<div>
+<div class="panel">
+  <div class="hd"><span class="t">风控数据</span><span><span class="tag">纯密网</span> <span class="ver">v4.08</span></span></div>
+  <div class="status"><span class="dot okbg"></span><span class="ok">安全</span><span class="dim">&nbsp;·&nbsp;按当前推演，物理防线内保证金充足</span></div>
+
+  <div class="sec">
+    <div class="sh">今日交易（北京时间 11/12）</div>
+    <div class="row"><span class="l">今日已交易</span><span class="v hl">27 次</span></div>
+    <div class="row"><span class="l">今日已实现</span><span class="v pos">+$4.12</span></div>
+    <div class="row"><span class="l">本月已实现</span><span class="v pos">+$86.37</span></div>
+    <div class="row"><span class="l">当前浮动</span><span class="v neg">-$23.50</span></div>
+    <div class="row"><span class="l">隔夜利息</span><span class="v">-$3.21<small>本月已结算 -$5.67</small></span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">风控推演</div>
+    <div class="row"><span class="l">当前占用保证金</span><span class="v">$18.42<small>1,284.60%</small></span></div>
+    <div class="row"><span class="l">跌至底部 4000.00</span><span class="v">$15.10<small>412.30%</small></span></div>
+    <div class="row"><span class="l">满载并触底</span><span class="v">$41.88<small>168.90%</small></span></div>
+    <div class="row"><span class="l">当前持仓爆仓线</span><span class="v">2712.45</span></div>
+    <div class="row"><span class="l">满载爆仓线</span><span class="v">3206.80</span></div>
+    <div class="row"><span class="l">防线 3000.00 需补充</span><span class="v ok">$0.00 安全通过</span></div>
+    <div class="row"><span class="l">最密间距（点）</span><span class="v">1区 150 / 2区 关 / 3区 关</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">持仓</div>
+    <div class="row"><span class="l">底仓</span><span class="v">3 单<small>0.30 手</small></span></div>
+    <div class="row"><span class="l">网格</span><span class="v">46 单<small>0.46 手</small></span></div>
+    <div class="row"><span class="l">网格合并</span><span class="v">2 单<small>0.60 手</small></span></div>
+    <div class="row"><span class="l hl">合计</span><span class="v hl">51 单<small>1.36 手</small></span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ========== 方案 B：数据卡片 ========== -->
+<div class="opt" id="B">
+<div>
+<div class="panel">
+  <div class="hd"><span class="t">风控数据</span><span><span class="tag">纯密网</span> <span class="ver">v4.08</span></span></div>
+  <div class="status"><span class="dot okbg"></span><span class="ok">安全</span><span class="dim">&nbsp;·&nbsp;按当前推演，物理防线内保证金充足</span></div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="k">今日已交易 · 北京 11/12</div><div class="n">27<small>次</small></div></div>
+    <div class="kpi"><div class="k">今日已实现</div><div class="n pos">+$4.12</div></div>
+    <div class="kpi"><div class="k">当前浮动</div><div class="n neg">-$23.50</div></div>
+    <div class="kpi"><div class="k">保证金比例</div><div class="n">1,284.6<small>%</small></div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">风控推演</div>
+    <table>
+      <tr><th></th><th>当前持仓</th><th>配置满载</th></tr>
+      <tr><td>占用保证金</td><td>$18.42</td><td>—</td></tr>
+      <tr><td>触底 4000.00 占用</td><td>$15.10</td><td>$41.88</td></tr>
+      <tr><td>触底比例</td><td>412.30%</td><td>168.90%</td></tr>
+      <tr><td>爆仓线</td><td>2712.45</td><td>3206.80</td></tr>
+    </table>
+    <div class="row" style="margin-top:2px"><span class="l">防线 3000.00 需补充</span><span class="v ok">$0.00 安全通过</span></div>
+    <div class="row"><span class="l">最密间距（点）</span><span class="v">1区 150 / 2区 关 / 3区 关</span></div>
+  </div>
+
+  <div class="sec">
+    <div class="sh">持仓</div>
+    <table>
+      <tr><th></th><th>单量</th><th>手数</th></tr>
+      <tr><td>底仓</td><td>3</td><td>0.30</td></tr>
+      <tr><td>网格</td><td>46</td><td>0.46</td></tr>
+      <tr><td>网格合并</td><td>2</td><td>0.60</td></tr>
+      <tr class="tot"><td>合计</td><td>51</td><td>1.36</td></tr>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="row"><span class="l">本月已实现</span><span class="v pos">+$86.37</span></div>
+    <div class="row"><span class="l">隔夜利息 持仓累计</span><span class="v">-$3.21<small>本月已结算 -$5.67</small></span></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ========== 方案 C：页签 + 可收起 ========== -->
+<div class="opt" id="C">
+<div>
+<div class="cap">① 概览页（默认）</div>
+<div class="panel" style="width:320px">
+  <div class="hd"><span class="t">StaticGridBot</span><span style="display:flex;gap:6px;align-items:center"><span class="tag">纯密网</span><span class="btn">—</span></span></div>
+  <div class="tabs"><div class="tab on">概览</div><div class="tab">风控</div><div class="tab">持仓</div></div>
+  <div class="status"><span class="dot okbg"></span><span class="ok">安全</span><span class="dim">&nbsp;·&nbsp;物理防线内保证金充足</span></div>
+  <div class="big">
+    <div><div class="k">今日已交易 · 北京 11/12</div><div class="n">27 <span style="font-size:12px;font-weight:400;color:#8A94A6">次</span></div></div>
+    <div style="text-align:right"><div class="k">今日已实现</div><div class="n pos">+$4.12</div></div>
+  </div>
+  <div class="sec">
+    <div class="row"><span class="l">当前浮动</span><span class="v neg">-$23.50</span></div>
+    <div class="row"><span class="l">本月已实现</span><span class="v pos">+$86.37</span></div>
+    <div class="row"><span class="l">持仓</span><span class="v">51 单<small>1.36 手</small></span></div>
+    <div class="row"><span class="l">当前爆仓线</span><span class="v">2712.45</span></div>
+  </div>
+</div>
+</div>
+<div>
+<div class="cap">② 点「风控」页签</div>
+<div class="panel" style="width:320px">
+  <div class="hd"><span class="t">StaticGridBot</span><span style="display:flex;gap:6px;align-items:center"><span class="tag">纯密网</span><span class="btn">—</span></span></div>
+  <div class="tabs"><div class="tab">概览</div><div class="tab on">风控</div><div class="tab">持仓</div></div>
+  <div class="sec">
+    <div class="row"><span class="l">当前占用保证金</span><span class="v">$18.42<small>1,284.60%</small></span></div>
+    <div class="row"><span class="l">跌至底部 4000.00</span><span class="v">$15.10<small>412.30%</small></span></div>
+    <div class="row"><span class="l">满载并触底</span><span class="v">$41.88<small>168.90%</small></span></div>
+    <div class="row"><span class="l">当前持仓爆仓线</span><span class="v">2712.45</span></div>
+    <div class="row"><span class="l">满载爆仓线</span><span class="v">3206.80</span></div>
+    <div class="row"><span class="l">防线 3000.00 需补充</span><span class="v ok">$0.00 通过</span></div>
+    <div class="row"><span class="l">最密间距（点）</span><span class="v">150 / 关 / 关</span></div>
+    <div class="row"><span class="l">隔夜利息</span><span class="v">-$3.21<small>本月 -$5.67</small></span></div>
+  </div>
+</div>
+</div>
+<div>
+<div class="cap">③ 点「—」收起，只剩一条</div>
+<div class="panel" style="width:320px">
+  <div class="hd"><span class="t">StaticGridBot</span><span style="display:flex;gap:8px;align-items:center;font-size:12px"><span class="dot okbg" style="margin:0"></span><span class="ok">安全</span><span class="dim">今日 27 次</span><span class="btn">+</span></span></div>
+</div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

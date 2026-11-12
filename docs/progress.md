@@ -1,11 +1,11 @@
 # 项目进度
 
-最后核对日期：2026-11-12
+最后核对日期：2026-11-13
 
 ## 最新已验证检查点
 
-- **v4.08 由用户验收（2026-11-12）**。
-- 编译结果 `0 errors, 0 warnings`；`tests/v408_tests.mq5` 隔离回归 `checks=27660 failures=0`（`tests/v408-tests.results.txt`）。
+- **v4.09 由用户验收（2026-11-13）**：修复面板字体比设计稿小，编译 `0 errors, 0 warnings`。只改字号，未重跑回归。
+- v4.08 编译结果 `0 errors, 0 warnings`；`tests/v408_tests.mq5` 隔离回归 `checks=27660 failures=0`（`tests/v408-tests.results.txt`）。
 - 实盘日志里的 10036“仓位已平”是服务器 TP 先成交导致的，属正常，不需要处理。
 
 ## 未经真实成交验证的路径
